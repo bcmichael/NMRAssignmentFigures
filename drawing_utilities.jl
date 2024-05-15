@@ -81,7 +81,6 @@ function fill_atom(center, element)
     if atom_shapes[element] == "square"
         ngonside(center, 1.75radius, 4, 0, :fill)
     elseif atom_shapes[element] == "circle"
-        # circle(center, radius-0.5, :fill)
         circle(center, radius-stroke/2, :fill)
     elseif atom_shapes[element] == "triangle"
         ngonside(center, 1.75radius-1, 3, pi/2, :fill)
@@ -131,7 +130,6 @@ function draw_amino_acid(letter::Char, heavies, protons, aa::AminoAcid, position
     end
     sethue("black")
     text(string(letter), Point(0,-text_position), halign=:center, valign=:middle)
-    # text(string(letter), Point(0,-10), halign=:center, valign=:middle)
     CO = aa.atoms['O'][1]
     line(Point(CO.x+radius, -a45), Point(aa.offset-a45-radius,-a45))
     return Point(position.x+aa.offset, position.y)
@@ -172,14 +170,8 @@ function draw_CN_legend(location)
         text(string(element), Point(x,0), halign=:center, valign=:middle)
         atom_outline((Point(x,v), element))
         atom_outline((Point(x,2v), element))
-        # atom_outline((Point(x,3v), element))
-        # atom_outline((Point(x,4v), element))
-        # sethue("green")
-        # fill_atom(Point(x,4v), element)
         sethue(color)
         fill_atom(Point(x,2v), element)
-        # circle(Point(x,3v), radius/2, :fill)
-        # circle(Point(x,4v), radius/2, :fill)
         sethue("black")
     end
     text("O/S", Point(4v,0), halign=:center, valign=:middle)

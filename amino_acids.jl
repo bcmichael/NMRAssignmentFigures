@@ -1,9 +1,3 @@
-v = 2*radius+2
-a45 = v*sqrt(2)/2
-v30 = v*sqrt(3)/2
-h30 = v/2
-offset_n = 2*a45+2*radius+3
-offset_w = 2*v+2*radius+3
 const AtomDict = Dict{Char,Tuple{Point,Char,Bool}}
 
 """
@@ -22,7 +16,15 @@ struct AminoAcid
     offset::Float64
 end
 
-amino_acids = Dict{Char,AminoAcid}(
+function set_radius(r)
+    global radius = r
+    global v = 2*radius+2
+    global a45 = v*sqrt(2)/2
+    v30 = v*sqrt(3)/2
+    h30 = v/2
+    offset_n = 2*a45+2*radius+3
+    offset_w = 2*v+2*radius+3
+global amino_acids = Dict{Char,AminoAcid}(
 'G' => AminoAcid(AtomDict('N' => (Point(-a45, -a45), 'N', true),
                            'α' => (Point(0, 0), 'C', true),
                            'O' => (Point(a45, -a45), 'C', false)),
@@ -230,3 +232,5 @@ amino_acids = Dict{Char,AminoAcid}(
                  ['N'=>'α', 'α'=>'O', 'α'=>'β', 'β'=>'γ', 'γ'=>'δ', 'γ'=>'D', 'δ'=>'ϵ', 'D'=>'E', 'D'=>'e', 'ϵ'=>'E', 'E'=>'Z', 'e'=>'z', 'Z'=>'η', 'z'=>'η'],
                  offset_w)
 )
+end
+set_radius(1)

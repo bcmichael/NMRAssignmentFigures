@@ -1,6 +1,5 @@
 using Luxor
-radius = 3 # size of the atoms, the whole drawing is scaled to this, must be set before amino_acids.jl is included
-stroke = 1 # thickness of the black lines in the drawing
+
 include("amino_acids.jl")
 include("assignments.jl")
 include("drawing_utilities.jl")
@@ -14,6 +13,8 @@ Drawing(540, 330, output) # set size of figure here
 background("white")
 sethue("black")
 fontface("Helvetica")
+radius = 3 # size of the atoms, the whole drawing is scaled to this
+stroke = 1 # thickness of the black lines in the drawing
 font_size = 2*radius+2 # set the size of the text
 left_start = 20 # adjust the position of the first amino acid on each row
 vertical_spacing = font_size*2+5 # adjust how much vertical space is left for the labels
@@ -24,6 +25,7 @@ text_position = 15 # adjust how far the labels are from the drawn amino acids
 
 fontsize(font_size)
 setline(stroke)
+set_radius(radius)
 draw_HCN_legend(Point(200,5))
 location = Point(left_start, vertical_spacing+5*font_size+5) # start drawing below the legend
 max_height = 0

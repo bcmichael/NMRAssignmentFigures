@@ -8,30 +8,75 @@ sequence starts with a methionine at position zero.
 """
 function assignments(seq::String, shift_file; M0=false)
     results = [build_assignment(aa) for aa in seq]
-    shifts = split.(readlines(shift_file)[3:end])
+    shifts = readlines(shift_file)[3:end]
     offset = M0 ? 1 : 0
-    for shift in shifts
+    for line in shifts
+        shift = split(line)
         shift[1] != "H2O" || continue
 
         code = shift[1][1]
         number = parse(Int, shift[1][2:end])+offset
         atom = uppercase(shift[2][2:end])
         element = shift[3][end]
+
+        # Glycine has two α protons, which might be assigned separately,
+        # but will not be plotted separately here
+        if code == 'G' && length(atom) == 2 && element == 'H' && atom[1] == 'A'
+            atom = "A"
+        end
+
+        # The backbone N and the H attached to it do not need to
+        # specify a site beyond just the element
         if atom == "" && shift[2][1] in ('N', 'H')
             atom = "N"
         end
-        if (element != shift[2][1] && shift[2][1] != 'Q') || ! (atom in keys(atoms))
+
+        # The element in the atom name should match the type of nucleus
+        # unless it is Q which can be used for degenerate sites
+        if element != shift[2][1] && shift[2][1] != 'Q'
+            println("Atom name $(shift[2]) does not match nucleus $(shift[3])")
+            print_name_options(results[number].aa, element, code)
+            println(line)
             continue
         end
 
-        code == results[number].code || error()
+        if ! (atom in keys(atoms))
+            println("$(shift[2]) is not a valid name for an atom")
+            print_name_options(results[number].aa, element, code)
+            println(line)
+            continue
+        end
 
-        atom = atoms[atom]
+        if code != results[number].code
+            println("$(shift[0]) does not match the amino acid sequence")
+            println(line)
+            error()
+        end
+
+        atom_name = atoms[atom]
+        if ! (atom_name in keys(results[number].aa.atoms))
+            println("$(shift[2]) is not a valid name for an atom in $(code)")
+            print_name_options(results[number].aa, element, code)
+            println(line)
+            continue
+        end
+
         if element == 'H'
-            results[number].protons[atom] = true
+            if ! results[number].aa.atoms[atom_name][3]
+                site = results[number].aa.atoms[atom_name][2]*atom
+                println("In $(code) $(site) does not have protons")
+                print_name_options(results[number].aa, element, code)
+                continue
+            end
+            results[number].protons[atom_name] = true
         else
-            element == results[number].aa.atoms[atom][2] || println(shift)
-            results[number].heavies[atom] = true
+            if element != results[number].aa.atoms[atom_name][2]
+                println("In $(code) the element of site $(atom) is not $(element)")
+                print_name_options(results[number].aa, element, code)
+                println(line)
+                continue
+            end
+            results[number].heavies[atom_name] = true
         end
     end
     return results
@@ -57,12 +102,28 @@ function build_assignment(code::Char)
 end
 
 """
+    print_name_options(aa::AminoAcid, element::Char, code::Char)
+
+Print a list of the acceptable names for sites in the specified amino acid that
+match the element
+"""
+function print_name_options(aa::AminoAcid, element::Char, code::Char)
+    out = []
+    for atom in atoms
+        if atom[2] in keys(aa.atoms) && (aa.atoms[atom[2]][2] == element || (element == 'H' && aa.atoms[atom[2]][3]))
+            push!(out, atom[1])
+        end
+    end
+    options = element*join(out," $(element)")
+    println("In $(code) valid options for $(element) are $(options)")
+    # return element*join(out," $(element)")
+end
+
+"""
 Translation between the atom nomenclature we use in sparky and the nomenclature
 used in amino_acids.jl when describing amino acids
 """
 atoms = Dict{String,Char}("A"=>'α',
-                          "A2"=>'α',
-                          "A3"=>'α',
                           "B"=>'β',
                           "N"=>'N',
                           "O"=>'O',
